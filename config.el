@@ -32,7 +32,7 @@
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-one)
+(setq doom-theme 'doom-gruvbox)
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
@@ -79,7 +79,8 @@
 (require 'org-roam-export)
 (require 'org-id)
 (require 'org-journal)
-
+(require 'org-appear)
+(require 'nyan-mode)
 
 
 ;;; Easy access to config files
@@ -90,7 +91,20 @@
                    :desc "Doom Init" "i" (lambda () (interactive) (find-file "~/.config/doom/init.el"))
                    :desc "Reload Config" "r" (lambda () (interactive) (load-file "~/.config/doom/config.el"))
                    :desc "Doom Packages" "p" (lambda () (interactive) (find-file "~/.config/doom/packages.el"))
+                   :desc "Hide Titlebar" "h" (lambda () (interactive) (toggle-titlebar))
       )
+      (:prefix-map ("e" . "EMMS")
+                   :desc "Play/Pause" "p" #'emms-pause
+                   :desc "Back" "<" #'emms-previous
+                   :desc "Next" ">" #'emms-next
+                   )
+      (:prefix-map ("#" . "EMMS")
+                   :desc "Play/Pause" "#" #'emms-pause
+                   :desc "Back" "'" #'emms-previous
+                   :desc "Next" "RET" #'emms-next
+                   :desc "Shuffle" "s" #'emms-shuffle
+                   :desc "Unshuffle" "u" #'emms-playlist-sort-by-info-albumartist
+                  )
 )
 
 ;;; lsp-mode shortcuts
@@ -101,29 +115,106 @@
       :desc "Describe thing at point" :n "l" #'lsp-describe-thing-at-point
 )
 
-;;; org-mode shortcuts
-(map! :after org-mode
-      :localleader
-      (:prefix-map ("r" . "org roam")
-        :desc "Create Link" "l" #'org-roam-node-insert
-        :desc "Create Node" "n" #'org-roam-node-insert
-        :desc "Go Back" "b" #'org-mark-ring-goto
-        :desc "Find Node" "f" #'org-roam-node-find
-        :desc "Toggle Roam Buffer" "o" #'org-roam-buffer-toggle
-      ))
-
-;;; theme
-(setq doom-theme 'doom-gruvbox)
-
 ;;; org-mode setup
-(setq org-roam-directory "~/org")
 
+;; create shortcuts
+(map! :localleader
+      :map org-mode-map
+      :prefix ("m" : "roam")
+      :desc "Create Link" "l" #'org-roam-node-insert
+      :desc "Create Node" "n" #'org-roam-node-insert
+      :desc "Go Back" "b" #'org-mark-ring-goto
+      :desc "Find Node" "f" #'org-roam-node-find
+      :desc "Toggle Roam Buffer" "o" #'org-roam-buffer-toggle
+      )
+
+;; setup capture templates for org-roam
 (setq org-roam-capture-templates
       '(("d" "default" plain
          "%?"
          :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
          :unarrowed t)))
 
+;; change settings for org-appear
+(use-package! org-appear
+  :hook (org-mode . org-appear-mode)
+  :config
+  (setq org-appear-trigger 'always)
+
+  (setq org-hide-emphasis-markers t)
+  (setq org-appear-autoemphasis t)
+
+  (setq org-link-descriptive t)
+  (setq org-appear-autolinks t)
+
+  (setq org-pretty-entities t)
+  (setq org-appear-autoentities t)
+  (setq org-appear-autosubmarkers t)
+
+  (setq org-hidden-keywords t)
+  (setq org-appear-autokeywords t)
+
+  (setq org-appear-inside-latex t)
+)
+
+;; enable nyan-mode
+(use-package! nyan-mode
+  :hook (org-mode . nyan-mode))
+
+;; enable org-fragtog
+(use-package! org-fragtog
+  :hook (org-mode . org-fragtog-mode))
+
+;; org-roam setup
+(setq org-roam-directory (file-truename "~/org"))
+(org-roam-db-autosync-mode)
+(use-package! org-appear
+  )
+
+;; display images as soon as i open an org-mode file
+(add-hook 'org-mode-hook (lambda () (org-display-inline-images)))
+
+
+;;; org-mode setup over
+
+
+;;; emms setup
+(emms-all)
+(setq emms-info-functions '(emms-info-native emms-info-metaflac))
+(setq emms-player-list '(emms-player-vlc emms-player-mpg321))
+(emms-add-directory-tree "~/Music")
+(setq emms-browser-covers 'emms-browser-cache-thumbnail)
+
+
+;;; Setup to allow me to toggle titlebar.
+;;; Unsure if this works on MacOS.
+(defvar titlebar-hidden nil
+  "Whether the titlebar is hidden or not.
+Any value means that the titlebar is hidden.
+Used for the function `toggle-titlebar'.")
+
+(defun toggle-titlebar()
+  "Toggle the title bar.
+Uses the variable `titlebar-hidden'.
+Works by using `set-frame-parameter' on the `undecorated' tag."
+  (interactive)
+  (setq titlebar-hidden (not titlebar-hidden))
+  (set-frame-parameter nil 'undecorated titlebar-hidden))
+
+
+
+;;; Old version of toggle-titlebar
+;; (defun hide-titlebar ()
+;;   "Hide title bar from frame."
+;;   (interactive)
+;;   (set-frame-parameter nil 'undecorated t)
+;;   (setq line-number-mode nil))
+;;
+;; (defun show-titlebar ()
+;;   "Show title bar in frame."
+;;   (interactive)
+;;   (set-frame-parameter nil 'undecorated nil)
+;;   (setq line-number-mode t))
 
 (provide 'config)
 ;;; config.el ends here

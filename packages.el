@@ -52,6 +52,10 @@
 
 (package! org-roam)
 (package! org-journal)
+(package! org-appear)
+(package! org-fragtog)
+(package! nyan-mode)
+
 
 (provide 'packages)
 ;;; packages.el ends here
