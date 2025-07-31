@@ -1,0 +1,4 @@
+* DOOM Emacs Config
+This is my config for DOOM Emacs. It's nothing special but I'm slowly building it up over time as it becomes my main method of doing anything :)
+
+This one's sister repository, my Arch i3wm setup, [[https://github.com/seedsensation/.dotfiles][can be found here]].

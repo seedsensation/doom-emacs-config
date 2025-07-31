@@ -202,6 +202,7 @@ Works by using `set-frame-parameter' on the `undecorated' tag."
   (set-frame-parameter nil 'undecorated titlebar-hidden))
 
 
+(setq source-directory "/usr/share/emacs/30.1")
 
 ;;; Old version of toggle-titlebar
 ;; (defun hide-titlebar ()
@@ -215,6 +216,15 @@ Works by using `set-frame-parameter' on the `undecorated' tag."
 ;;   (interactive)
 ;;   (set-frame-parameter nil 'undecorated nil)
 ;;   (setq line-number-mode t))
+
+;; Really weird error where backspacing the final char of a line freezes emacs.
+;; This is supposed to fix it.
+(remove-hook 'doom-first-buffer-hook #'smartparens-global-mode)
+
+;; set transparency
+(set-frame-parameter (selected-frame) 'alpha  '(80 80))
+(add-to-list 'default-frame-alist '(alpha 80 80))
+
 
 (provide 'config)
 ;;; config.el ends here
