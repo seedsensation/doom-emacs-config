@@ -33,7 +33,12 @@
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
 (setq doom-theme 'doom-gruvbox)
+;;(custom-theme-set-faces! 'doom-gruvbox
+;;  '(default :background "#27232b")
+;;  )
+(add-to-list 'default-frame-alist '(background-color . "#27232b"))
 
+(set-background-color "#27232b")
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
 (setq display-line-numbers-type t)
@@ -81,17 +86,35 @@
 (require 'org-journal)
 (require 'org-appear)
 (require 'nyan-mode)
+(require 'lsp-mode)
+;;(require 'org-download)
 
+(add-to-list 'load-path "~/scripts/emacs/qml-ts-mode/")
+(require 'qml-ts-mode)
+(use-package qml-ts-mode
+  :after lsp-mode
+  :config
+  (add-to-list 'lsp-language-id-configuration '(qml-ts-mode . "qml-ts"))
+  (lsp-register-client
+   (make-lsp-client :new-connection (lsp-stdio-connection '("qmlls"))
+                    :activation-fn (lsp-activate-on "qml-ts")
+                    :server-id 'qmlls))
+  (add-hook 'qml-ts-mode-hook (lambda ()
+                                (setq-local electric-indent-chars '(?\n ?\( ?\) ?{ ?} ?\[ ?\] ?\; ?,))
+                                (lsp-deferred))))
 
+(add-hook 'qml-ts-mode-hook 'smartparens-mode)
 ;;; Easy access to config files
 (map! :leader
-      (:prefix-map ("d" . "Doom Config")
+      (:prefix-map ("d" . "Mercury's Custom Config")
                    :desc "Doom Directory" "d" #'find-file("~/.config/doom/")
                    :desc "Doom Config" "c" (lambda () (interactive) (find-file "~/.config/doom/config.el"))
                    :desc "Doom Init" "i" (lambda () (interactive) (find-file "~/.config/doom/init.el"))
                    :desc "Reload Config" "r" (lambda () (interactive) (load-file "~/.config/doom/config.el"))
                    :desc "Doom Packages" "p" (lambda () (interactive) (find-file "~/.config/doom/packages.el"))
-                   :desc "Hide Titlebar" "h" (lambda () (interactive) (toggle-titlebar))
+                   :desc "Toggle Titlebar" "t" (lambda () (interactive) (toggle-titlebar))
+                   :desc "Org Home" "h" (lambda () (interactive)(find-file "~/org/home.org"))
+                   :desc "What is this thing?" "l" #'lsp-describe-thing-at-point
       )
       (:prefix-map ("e" . "EMMS")
                    :desc "Play/Pause" "p" #'emms-pause
@@ -126,6 +149,9 @@
       :desc "Go Back" "b" #'org-mark-ring-goto
       :desc "Find Node" "f" #'org-roam-node-find
       :desc "Toggle Roam Buffer" "o" #'org-roam-buffer-toggle
+
+      :prefix ("a" : "+attachments")
+      :desc "Paste image from clipboard" "p" #'yank-media
       )
 
 ;; setup capture templates for org-roam
@@ -219,11 +245,21 @@ Works by using `set-frame-parameter' on the `undecorated' tag."
 
 ;; Really weird error where backspacing the final char of a line freezes emacs.
 ;; This is supposed to fix it.
-(remove-hook 'doom-first-buffer-hook #'smartparens-global-mode)
+;(remove-hook 'doom-first-buffer-hook #'smartparens-global-mode)
 
 ;; set transparency
-(set-frame-parameter (selected-frame) 'alpha  '(80 80))
-(add-to-list 'default-frame-alist '(alpha 80 80))
+(set-frame-parameter (selected-frame) 'alpha  '(100 100))
+(add-to-list 'default-frame-alist '(alpha 100 100))
+
+;;(after! org-download
+;;  (setq org-download-method 'directory)
+;;  (setq org-download-image-dir (concat (file-name-sans-extension (buffer-file-name)) "-img"))
+;;  (setq org-download-image-org-width 600)
+;;  (setq org-download-link-format "[[file:%s]]\n"
+;;        org-download-abbreviate-filename-function #'file-relative-name)
+;;  (setq org-download-link-format-function #'org-download-link-format-function-default))
+
+
 
 
 (provide 'config)
