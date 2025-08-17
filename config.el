@@ -89,21 +89,21 @@
 (require 'lsp-mode)
 ;;(require 'org-download)
 
-(add-to-list 'load-path "~/scripts/emacs/qml-ts-mode/")
-(require 'qml-ts-mode)
-(use-package qml-ts-mode
-  :after lsp-mode
-  :config
-  (add-to-list 'lsp-language-id-configuration '(qml-ts-mode . "qml-ts"))
-  (lsp-register-client
-   (make-lsp-client :new-connection (lsp-stdio-connection '("qmlls"))
-                    :activation-fn (lsp-activate-on "qml-ts")
-                    :server-id 'qmlls))
-  (add-hook 'qml-ts-mode-hook (lambda ()
-                                (setq-local electric-indent-chars '(?\n ?\( ?\) ?{ ?} ?\[ ?\] ?\; ?,))
-                                (lsp-deferred))))
-
-(add-hook 'qml-ts-mode-hook 'smartparens-mode)
+;; (add-to-list 'load-path "~/scripts/emacs/qml-ts-mode/")
+;; (require 'qml-ts-mode)
+;; (use-package qml-ts-mode
+;;   :after lsp-mode
+;;   :config
+;;   (add-to-list 'lsp-language-id-configuration '(qml-ts-mode . "qml-ts"))
+;;   (lsp-register-client
+;;    (make-lsp-client :new-connection (lsp-stdio-connection '("qmlls"))
+;;                     :activation-fn (lsp-activate-on "qml-ts")
+;;                     :server-id 'qmlls))
+;;   (add-hook 'qml-ts-mode-hook (lambda ()
+;;                                 (setq-local electric-indent-chars '(?\n ?\( ?\) ?{ ?} ?\[ ?\] ?\; ?,))
+;;                                 (lsp-deferred))))
+;;
+;; (add-hook 'qml-ts-mode-hook 'smartparens-mode)
 ;;; Easy access to config files
 (map! :leader
       (:prefix-map ("d" . "Mercury's Custom Config")
@@ -205,11 +205,11 @@
 
 
 ;;; emms setup
-(emms-all)
-(setq emms-info-functions '(emms-info-native emms-info-metaflac))
-(setq emms-player-list '(emms-player-vlc emms-player-mpg321))
-(emms-add-directory-tree "~/Music")
-(setq emms-browser-covers 'emms-browser-cache-thumbnail)
+;; (emms-all)
+;; (setq emms-info-functions '(emms-info-native emms-info-metaflac))
+;; (setq emms-player-list '(emms-player-vlc emms-player-mpg321))
+;; (emms-add-directory-tree "~/Music")
+;; (setq emms-browser-covers 'emms-browser-cache-thumbnail)
 
 
 ;;; Setup to allow me to toggle titlebar.
