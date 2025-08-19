@@ -104,9 +104,26 @@
                                 (lsp-deferred))))
 
 (add-hook 'qml-ts-mode-hook 'smartparens-mode)
+
+
+;;; Setup to allow me to toggle titlebar.
+;;; Unsure if this works on MacOS.
+(defvar titlebar-hidden nil
+  "Whether the titlebar is hidden or not.
+Any value means that the titlebar is hidden.
+Used for the function `toggle-titlebar'.")
+
+(defun toggle-titlebar()
+  "Toggle the title bar.
+Uses the variable `titlebar-hidden'.
+Works by using `set-frame-parameter' on the `undecorated' tag."
+  (interactive)
+  (setq titlebar-hidden (not titlebar-hidden))
+  (set-frame-parameter nil 'undecorated titlebar-hidden))
+
 ;;; Easy access to config files
 (map! :leader
-      (:prefix-map ("d" . "Mercury's Custom Config")
+      (:prefix-map ("d" . "Custom Keybinds")
                    :desc "Doom Directory" "d" #'find-file("~/.config/doom/")
                    :desc "Doom Config" "c" (lambda () (interactive) (find-file "~/.config/doom/config.el"))
                    :desc "Doom Init" "i" (lambda () (interactive) (find-file "~/.config/doom/init.el"))
@@ -115,6 +132,8 @@
                    :desc "Toggle Titlebar" "t" (lambda () (interactive) (toggle-titlebar))
                    :desc "Org Home" "h" (lambda () (interactive)(find-file "~/org/home.org"))
                    :desc "What is this thing?" "l" #'lsp-describe-thing-at-point
+                   :desc "Hide Properties" "o" (lambda() (interactive) (org-cycle-hide-drawers 'all))
+
       )
       (:prefix-map ("e" . "EMMS")
                    :desc "Play/Pause" "p" #'emms-pause
@@ -212,21 +231,6 @@
 (setq emms-browser-covers 'emms-browser-cache-thumbnail)
 
 
-;;; Setup to allow me to toggle titlebar.
-;;; Unsure if this works on MacOS.
-(defvar titlebar-hidden nil
-  "Whether the titlebar is hidden or not.
-Any value means that the titlebar is hidden.
-Used for the function `toggle-titlebar'.")
-
-(defun toggle-titlebar()
-  "Toggle the title bar.
-Uses the variable `titlebar-hidden'.
-Works by using `set-frame-parameter' on the `undecorated' tag."
-  (interactive)
-  (setq titlebar-hidden (not titlebar-hidden))
-  (set-frame-parameter nil 'undecorated titlebar-hidden))
-
 
 (setq source-directory "/usr/share/emacs/30.1")
 
@@ -245,7 +249,7 @@ Works by using `set-frame-parameter' on the `undecorated' tag."
 
 ;; Really weird error where backspacing the final char of a line freezes emacs.
 ;; This is supposed to fix it.
-;(remove-hook 'doom-first-buffer-hook #'smartparens-global-mode)
+(remove-hook 'doom-first-buffer-hook #'smartparens-global-mode)
 
 ;; set transparency
 (set-frame-parameter (selected-frame) 'alpha  '(100 100))
@@ -259,7 +263,43 @@ Works by using `set-frame-parameter' on the `undecorated' tag."
 ;;        org-download-abbreviate-filename-function #'file-relative-name)
 ;;  (setq org-download-link-format-function #'org-download-link-format-function-default))
 
+(require 'org)
 
+(defun org-cycle-hide-drawers (state)
+  "Re-hide all drawers after a visibility state change."
+  (when (and (derived-mode-p 'org-mode)
+             (not (memq state '(overview folded contents))))
+    (save-excursion
+      (let* ((globalp (memq state '(contents all)))
+             (beg (if globalp
+                    (point-min)
+                    (point)))
+             (end (if globalp
+                    (point-max)
+                    (if (eq state 'children)
+                      (save-excursion
+                        (outline-next-heading)
+                        (point))
+                      (org-end-of-subtree t)))))
+        (goto-char beg)
+        (while (re-search-forward org-drawer-regexp end t)
+          (save-excursion
+            (beginning-of-line 1)
+            (when (looking-at org-drawer-regexp)
+              (let* ((start (1- (match-beginning 0)))
+                     (limit
+                       (save-excursion
+                         (outline-next-heading)
+                           (point)))
+                     (msg (format
+                            (concat
+                              "org-cycle-hide-drawers:  "
+                              "`:END:`"
+                              " line missing at position %s")
+                            (1+ start))))
+                (if (re-search-forward "^[ \t]*:END:" limit t)
+                  (outline-flag-region start (point-at-eol) t)
+                  (user-error msg))))))))))
 
 
 (provide 'config)
